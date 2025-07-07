@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config(); 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -22,13 +22,40 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    await client.connect();  
+    
+    const tipsCollection = client.db("gardeningDB").collection("tips");
+
+    app.get('/api/tips', async (req, res) => {
+      const query = {};
+      const tips = await tipsCollection.find(query).toArray();
+      res.send(tips);
+    });
+
+    app.get('/api/tips/:id', async (req, res) => {
+      const id = req.params.id;
+      if (!ObjectId.isValid(id)) {
+    return res.status(400).send({ error: 'Invalid tip ID format' });
+  }
+      const query = { _id: new ObjectId(id) };
+      const tip = await tipsCollection.findOne(query);
+      res.send(tip);
+    });
+
+    // Express
+app.post('/api/tips', async (req, res) => {
+  const newTip = req.body;
+  const result = await tipsCollection.insertOne(newTip);
+  res.send(result);
+});
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
