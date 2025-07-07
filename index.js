@@ -25,27 +25,28 @@ async function run() {
     await client.connect();  
     
     const tipsCollection = client.db("gardeningDB").collection("tips");
-
+    // Get all tips
     app.get('/api/tips', async (req, res) => {
       const query = {};
       const tips = await tipsCollection.find(query).toArray();
       res.send(tips);
     });
 
+    // Get a single tip by ID
     app.get('/api/tips/:id', async (req, res) => {
       const id = req.params.id;
       if (!ObjectId.isValid(id)) {
     return res.status(400).send({ error: 'Invalid tip ID format' });
-  }
-      const query = { _id: new ObjectId(id) };
+  }const query = { _id: new ObjectId(id) };
       const tip = await tipsCollection.findOne(query);
       res.send(tip);
     });
 
+
+// Get tips by user email
     app.get('/api/my-tips', async (req, res) => {
   const userEmail = req.query.email;
   if (!userEmail) return res.status(400).send({ message: 'Email is required' });
-
   try {
     const result = await tipsCollection.find({ email: userEmail }).toArray();
     res.send(result);
