@@ -25,7 +25,8 @@ async function run() {
     await client.connect();  
     
     const tipsCollection = client.db("gardeningDB").collection("tips");
-    // Get all tips
+
+    // Get all tips at /api/tips
     app.get('/api/tips', async (req, res) => {
       const query = {};
       const tips = await tipsCollection.find(query).toArray();
