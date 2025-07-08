@@ -70,20 +70,16 @@ app.post('/api/tips', async (req, res) => {
 app.put('/api/tips/:id', async (req, res) => {
   const id = req.params.id;
   const updatedTip = { ...req.body };
-
   try {
-    // Remove _id before updating (since it's immutable)
+    // Remove _id before updating 
     delete updatedTip._id;
-
     const result = await tipsCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedTip }
     );
-
     if (result.matchedCount === 0) {
       return res.status(404).send({ message: 'Tip not found' });
     }
-
     res.send({ message: 'Tip updated successfully' });
   } catch (error) {
     console.error('Error updating tip:', error);
@@ -95,7 +91,6 @@ app.put('/api/tips/:id', async (req, res) => {
 // Delete a tip
 app.delete('/api/tips/:id', async (req, res) => {
   const id = req.params.id; 
-
   try {
     const result = await tipsCollection.deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 0) {
@@ -108,12 +103,12 @@ app.delete('/api/tips/:id', async (req, res) => {
   }
 });
 
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
 
-    // await client.close();
   }
 }
 run().catch(console.dir);
