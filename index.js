@@ -5,7 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173/' }));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.bade1fx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -18,23 +18,28 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+app.get('/raihan', (req, res) => {
+  res.send('Gardening Server is running!'); 
+});
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();  
+    // await client.connect();  
     
     const tipsCollection = client.db("gardeningDB").collection("tips");
 
-    // Get all tips at /api/tips
-    app.get('/api/tips', async (req, res) => {
+
+    // Get all tips at /tips 
+    app.get('/tips', async (req, res) => {
       const query = {};
-      const tips = await tipsCollection.find(query).toArray();
-      res.send(tips);
+      const result = await tipsCollection.find(query).toArray();
+      res.send(result);
     });
 
+
     // Get a single tip by ID
-    app.get('/api/tips/:id', async (req, res) => {
+    app.get('/tips/:id', async (req, res) => {
       const id = req.params.id;
       if (!ObjectId.isValid(id)) {
     return res.status(400).send({ error: 'Invalid tip ID format' });
@@ -45,7 +50,7 @@ async function run() {
 
 
 // Get tips by user email
-    app.get('/api/my-tips', async (req, res) => {
+    app.get('/my-tips', async (req, res) => {
   const userEmail = req.query.email;
   if (!userEmail) return res.status(400).send({ message: 'Email is required' });
   try {
@@ -59,7 +64,7 @@ async function run() {
 
 
     // Express
-app.post('/api/tips', async (req, res) => {
+app.post('/tips', async (req, res) => {
   const newTip = req.body;
   const result = await tipsCollection.insertOne(newTip);
   res.send(result);
@@ -67,11 +72,10 @@ app.post('/api/tips', async (req, res) => {
 
 
 // Update a tip
-app.put('/api/tips/:id', async (req, res) => {
+  app.put('/tips/:id', async (req, res) => {
   const id = req.params.id;
   const updatedTip = { ...req.body };
   try {
-    // Remove _id before updating 
     delete updatedTip._id;
     const result = await tipsCollection.updateOne(
       { _id: new ObjectId(id) },
@@ -89,7 +93,7 @@ app.put('/api/tips/:id', async (req, res) => {
 
 
 // Delete a tip
-app.delete('/api/tips/:id', async (req, res) => {
+app.delete('/tips/:id', async (req, res) => {
   const id = req.params.id; 
   try {
     const result = await tipsCollection.deleteOne({ _id: new ObjectId(id) });
@@ -105,7 +109,7 @@ app.delete('/api/tips/:id', async (req, res) => {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
 
